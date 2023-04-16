@@ -5,5 +5,9 @@ Database information :
 
 .NET 7
 Entity Fremwork code 7 version 
+
+IDE 
+
+visual studio 2022
   
   
