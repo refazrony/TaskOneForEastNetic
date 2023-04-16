@@ -1,0 +1,390 @@
+﻿
+@page "/orders"
+@page "/AddNewOrders/{id:int}"
+
+@using System.Text;
+@using TaskOne.Shared;
+@using Newtonsoft.Json;
+@using Microsoft.AspNetCore.Components;
+@using Syncfusion.Blazor.Grids
+
+@inject HttpClient http;
+@inject NavigationManager navManager
+
+
+<PageTitle>@title</PageTitle>
+
+<h3>Orders</h3>
+
+<div class="container">
+    <div class="row g-2">
+        <div class="col-6">
+            <div class="p-3">
+
+
+                 <div class="row">
+                <div class="col-md-6">
+                    
+                    <EditForm EditContext="@formOrdersEditContext" Model="@odr" OnInvalidSubmit="@saveData">
+                        <DataAnnotationsValidator />
+
+                        <div class="py-2">
+                            <label for="Name">Order Information #@odr.orderid</label>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Name">Name </label>
+                            <InputText @bind-Value="@odr.OrderName" class="form-control"></InputText>
+                            <ValidationMessage For="(()=>odr.OrderName)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="State">State</label>
+                            <InputText @bind-Value="@odr.State" class="form-control"></InputText>
+                            <ValidationMessage For="(()=>odr.State)" />
+
+                        </div>
+
+                        <div class="py-2">
+                            <button type="submit" class="btn btn-primary" @onclick="saveData">@btnLbl</button>
+                        </div>
+
+
+
+
+                    </EditForm>
+
+
+
+
+                </div>
+            </div>
+
+
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="p-3">
+
+
+                 <div class="row">
+                     <div class="col-md-6">
+                     @if (iswindoShow)
+                        {
+                          <EditForm  EditContext="@formEditContext" Model="@Objwindows" OnValidSubmit="@HandleFormSubmitWindows" >
+                             <DataAnnotationsValidator/>
+
+                             <div class="py-2">
+                                        
+                            </div>
+                              
+                               <div class="form-group">
+
+                                <label for="Name">Windows Info</label>
+                             
+
+                                     <InputSelect @bind-Value="@Objwindows.WindowName" class="form-control col-sm-3">
+                                        <option value="Select">--Select--</option>
+                                        <option value="A51">A51</option>
+                                        <option value="C Zone 5">C Zone 5</option>
+                                        <option value="GLB">GLB</option>
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => Objwindows.WindowName)" />
+
+
+                                <div class="form-group">
+                                    <label for="State">Quantity Of Windows</label>
+                                    <InputText @bind-Value="Objwindows.QuantityOfWindows" class="form-control"></InputText>
+                                    <ValidationMessage For="(()=>Objwindows.QuantityOfWindows)" />
+                                </div>
+
+
+                                <div class="form-group">
+                                    <label for="State">Total Sub Elements</label>
+                                    <InputText @bind-Value="Objwindows.TotalSubElements" class="form-control"></InputText>
+                                    <ValidationMessage For="(()=>Objwindows.TotalSubElements)" />
+                                </div>
+                            </div>
+
+                                <div class="py-2">
+                              @*  <button type="button" class="btn btn-primary" onclick="@(() => AddWindowsRow(Objwindows))">Add Windows</button>*@
+
+                                <button type="submit" class="btn btn-primary">Add Windows Save</button>
+
+                                </div>
+
+                       </EditForm>
+                        }
+
+                      
+        
+                     </div>
+                 </div>
+
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="p-3">
+                @if (SubItemSectionSHow){
+                    <Gridedit ButtonText="Save Sub items" person="@objCurrSelecwindows"  />
+                }
+
+            </div>
+        </div>
+
+
+        <div class="col-6">
+            <div class="p-3">
+
+                <div class="table-responsive">
+
+                <h3>Windows Info</h3>
+                @if (lstwin is null)
+                {
+                    <p><em>Loading... !</em></p>
+                }
+                else
+                {
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Name</th>
+                                <th>Quantity</th>
+                                <th>TotalSubEle</th>
+                                <th>Edit</th
+                                <th>Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody >
+                            @foreach (var row in lstwin)
+                            {
+                               //  @row
+
+                                <tr>
+                                    <td>@row.winId</td>
+                                    <td>@row.WindowName</td>
+                                    <td>@row.QuantityOfWindows</td>
+                                    <td>@row.TotalSubElements</td>
+                                    <td>
+                                       @* <a class="nav-link" href="AddNewOrders/@row.winId">
+                                            <span class="oi oi-pencil" aria-hidden="true">Edit</span>
+                                        </a>*@
+                                        <button class="btn btn-primary" @onclick="@(() => reloadWindos(@row.winId))">Edit</button>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-danger" @onclick="@(() => DeleteWindows(@row.winId))">Delete</button>
+                                    </td>
+                                </tr>
+                            }
+
+                           
+                        </tbody>
+                    </table>
+                }
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    
+</div>
+
+
+
+
+
+
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private string btnLbl="Save";
+    private bool SubItemSectionSHow = false;
+
+    private EditContext formEditContext;
+    private EditContext formOrdersEditContext;
+
+    private string title = "tst";
+    private Orders odr = new();
+    private windows Objwindows = new();
+    private windows objCurrSelecwindows= new();
+    private ICollection<windows> lstwin = new List<windows>();
+    private SubElement ObjSubElement = new SubElement();
+    private List<SubElement> lstObjSubElement = new List<SubElement>();
+    private List<SubElement> lstObjCurrSelecSubElement = new List<SubElement>();
+    private bool iswindoShow { get; set; } = false;
+
+    //Orders odr = new Orders
+    //{
+    //   OrderName = "",
+    //    State = "",
+    //    liwindows = new List<windows>
+    //    {
+    //        new windows { WindowName="", 
+    //                     QuantityOfWindows="", 
+    //                     TotalSubElements=null, 
+    //                     liSubElement=new List<SubElement>
+    //                     {
+    //                        new SubElement
+    //                        {                                                            
+    //                         Type="",
+    //                         Width=null,
+    //                         Height=null
+    //                        }                              //                     }
+    //        }   
+    //    }
+    //};
+
+    protected async override Task OnParametersSetAsync()
+    {
+        if (Id != 0)
+        {
+            odr = await http.GetFromJsonAsync<Orders>($"api/Orders/GetOrders/{Id}");
+            lstwin = odr.liwindows;
+
+
+            foreach (windows item in lstwin)
+            {
+                foreach (SubElement sitem in item.liSubElement)
+                {
+                    lstObjSubElement.Add(sitem);
+                }
+            }
+
+            iswindoShow = true;
+        }
+    }
+
+    protected override async void OnInitialized()
+    {
+        try
+        {
+
+
+            // Create EditContexts
+            ///  formEditContext = new EditContext(Objwindows);
+            //formOrdersEditContext =new EditContext(odr);
+
+
+
+            //lstObjSubElement.Add(new SubElement {winId=10,SubElementID=10,Type="test1" ,Width=0,Height=0} );
+            ////lstObjSubElement.Add(new SubElement {winId=10,SubElementID=10,Type="test1" ,Width=0,Height=0} );
+
+            //lstwin.Add(
+            //new windows { liSubElement = lstObjSubElement, winId = 0, WindowName = "", QuantityOfWindows = null, orderid = 0, TotalSubElements = null }
+            //);
+        }
+        catch (Exception c)
+        {
+
+            Console.WriteLine(c.Message);
+        }
+
+
+    }
+
+
+
+    private async Task saveData()
+    {
+        if (Id == 0)
+        {
+            btnLbl = "Loading...";
+            iswindoShow = true;
+            var response = await http.PostAsJsonAsync("api/Orders/PostOrders", odr);
+            // Read the response content as a string
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Deserialize the JSON response content into a C# object
+            var responseData = JsonConvert.DeserializeObject<Orders>(responseContent);
+
+            odr = responseData;
+            iswindoShow = true;
+            navManager.NavigateTo("/AddNewOrders/"+odr.orderid);
+            btnLbl = "Apply Changes";
+
+        }
+        else        
+        {
+
+
+            odr.liwindows = lstwin;
+
+            var response = await http.PostAsJsonAsync("api/Orders/PostOrdersUpdate", odr);
+
+            btnLbl = "Apply Changes";
+        }
+
+    }
+
+    private void reloadWindos(int pWindo)
+    {
+        SubItemSectionSHow = true;
+        Objwindows = lstwin.FirstOrDefault(f=>f.winId==pWindo);
+        objCurrSelecwindows = Objwindows;
+        lstObjCurrSelecSubElement = lstObjSubElement.FindAll(f => f.winId == objCurrSelecwindows.winId);
+        objCurrSelecwindows.liSubElement = lstObjCurrSelecSubElement;
+
+        foreach (SubElement item in lstObjCurrSelecSubElement)
+        {
+            lstObjSubElement.First(d => d.SubElementID == item.SubElementID).Type = item.Type;
+
+        }
+
+
+    }
+
+
+    private void HandleFormSubmitWindows()
+    {
+        // Handle form submission
+
+        if (Objwindows.winId == 0)
+        {
+
+            int noOfele = lstwin.Count + 1;
+            Objwindows.winId = Convert.ToInt32(Id.ToString() + noOfele.ToString());
+            Objwindows.orderid = Id;
+
+            for (int i = 0; i < Convert.ToInt32(Objwindows.TotalSubElements); i++)
+            {
+
+                string vWindiID = Objwindows.winId.ToString();
+                int? vSubElementID = Convert.ToInt32(Id.ToString()+vWindiID + i.ToString());
+                lstObjSubElement.Add(new SubElement { winId = Objwindows.winId, SubElementID = vSubElementID, Type = "a-"+Objwindows.winId, Width = null, Height = null });
+            }
+            Objwindows.liSubElement = lstObjSubElement;
+            lstwin.Add(Objwindows);
+            lstwin = lstwin.OrderByDescending(p => p.winId).ToList();
+        }
+        else            
+        {
+            windows lstwinToRemove = lstwin.FirstOrDefault(p => p.winId == Objwindows.winId);
+            lstwin.Remove(lstwinToRemove);
+            lstwin.Add(Objwindows);
+            lstwin = lstwin.OrderByDescending(p => p.winId).ToList();
+
+        }
+
+        // Reset form
+        Objwindows = new windows();
+        // formEditContext = new EditContext(Objwindows);
+
+    }
+
+    private void DeleteWindows(int pWindoid)
+    {   
+        windows lstwinToRemove = lstwin.FirstOrDefault(p => p.winId == pWindoid);
+        lstwin.Remove(lstwinToRemove);
+        lstwin = lstwin.OrderByDescending(p => p.winId).ToList();
+        objCurrSelecwindows = new();
+
+    }
+
+
+ 
+
+}
+

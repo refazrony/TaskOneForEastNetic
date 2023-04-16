@@ -1,0 +1,115 @@
+﻿@page "/Test"
+
+@using System.Collections.Generic
+
+<h1>My Page</h1>
+
+<!-- Form -->
+<h2>Form</h2>
+
+<EditForm EditContext="@formEditContext" OnValidSubmit="@HandleFormSubmit">
+    <div class="form-group">
+        <label for="firstName">First Name</label>
+        <InputText id="firstName" @bind-Value="@person.FirstName" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label for="lastName">Last Name</label>
+        <InputText id="lastName" @bind-Value="@person.LastName" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+</EditForm>
+
+<!-- Table -->
+<h2>Table</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in people)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.FirstName</td>
+                <td>@item.LastName</td>
+                <td>
+                    <button class="btn btn-primary" @onclick="@(() => EditPerson(item))">Edit</button>
+                    <button class="btn btn-danger" @onclick="@(() => DeletePerson(item))">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<Person> people = new List<Person>();
+    private Person person = new Person();
+    private EditContext formEditContext;
+    private EditContext tableEditContext;
+
+    protected override void OnInitialized()
+    {
+        // Initialize data
+        people.Add(new Person { Id = 1, FirstName = "John", LastName = "Doe" });
+        people.Add(new Person { Id = 2, FirstName = "Jane", LastName = "Doe" });
+
+        // Create EditContexts
+        formEditContext = new EditContext(person);
+        tableEditContext = new EditContext(people);
+
+        base.OnInitialized();
+    }
+
+    private void HandleFormSubmit()
+    {
+        // Handle form submission
+        if (formEditContext.Validate())
+        {
+            if (person.Id == 0)
+            {
+                person.Id = people.Max(p => p.Id) + 1;
+                people.Add(person);
+            }
+            else
+            {
+                var existingPerson = people.FirstOrDefault(p => p.Id == person.Id);
+                if (existingPerson != null)
+                {
+                    existingPerson.FirstName = person.FirstName;
+                    existingPerson.LastName = person.LastName;
+                }
+            }
+
+            // Reset form
+            person = new Person();
+            formEditContext = new EditContext(person);
+        }
+    }
+
+    private void EditPerson(Person person)
+    {
+        //Edit record in table
+        Console.WriteLine(person.FirstName);
+        formEditContext = new EditContext(person);
+        
+    }
+
+    private void DeletePerson(Person person)
+    {
+        // Delete record from table
+        people.Remove(person);
+    }
+
+    private class Person
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+    }
+}

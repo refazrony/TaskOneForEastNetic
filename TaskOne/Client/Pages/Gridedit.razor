@@ -1,0 +1,82 @@
+﻿@using TaskOne.Shared;
+@inject TaskOne.Client.Shared.PageHistoryState PageHistoryState
+
+<EditForm Model="@person" OnValidSubmit="@OnValidSubmit">
+   
+     <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Width</th>
+                                <th>Height</th>
+                                @*<th>Delete</th>*@
+                            </tr>
+                        </thead>
+     <tbody >
+
+
+
+    @foreach (var address in person.liSubElement)
+    {
+        <tr class="form-row">
+            @*<div class="form-group col-md-2">
+                <InputNumber id="Street" class="form-control" placeholder="ID" @bind-Value="address.SubElementID" />                
+            </div>*@
+            <td >
+                
+                        <InputSelect @bind-Value="@address.Type" class="form-control col-sm-4">
+                            <option value="Select">--Select--</option>
+                            <option value="Window">Window</option>
+                            <option value="Doors">Doors</option>
+                            <option value="Other">Other</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => address.Type)" />
+            </td>
+            <td >
+                <InputNumber id="State" class="form-control" placeholder="Width" @bind-Value="address.Width" />
+                <ValidationMessage For="@(() => address.Width)" />
+            </td>
+            <td >
+                <InputNumber id="ZipCode" class="form-control" placeholder="Height" @bind-Value="address.Height" />
+                <ValidationMessage For="@(() => address.Height)" />
+            </td>
+            <td >
+               @* <a href="javascript:void(0)" class="btn btn-danger" @onclick="@(()=>OnAddressDelete(person, address))">X</a>*@
+            </td>
+        </tr>
+    }
+     </tbody >
+    </table>
+
+    <div class="form-group">
+       @* <a href="javascript:void(0)" class="btn btn-success" @onclick="@(()=>OnAddressAdd(person))">Add Address</a>*@
+    </div>
+    <hr/>
+
+    <div class="form-group">
+     
+        <NavLink href="/OrderList" class="btn btn-link">Back</NavLink>
+    </div>
+
+</EditForm>
+
+@code {
+    [Parameter]
+    public windows person { get; set; }
+    [Parameter]
+    public string ButtonText { get; set; } = "Save";
+    [Parameter]
+    public bool loading {get; set;} = false;
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+
+    public void OnAddressDelete(windows person, SubElement address)
+    {
+       // person.liSubElement.(address);
+    }
+
+    public void OnAddressAdd(windows person)
+    {
+       // person.liSubElement.Append(new SubElement { winId = 10, SubElementID = 10, Type = "test1", Width = 0, Height = 0 });
+    }
+}
