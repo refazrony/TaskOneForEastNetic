@@ -16,9 +16,10 @@ else
         <thead>
             <tr>
                 <th>Order Id</th>
-                <th>Employee Name</th>
-                <th>Gender</th>                
-                <th>Action</th>
+                <th>Order Name</th>
+                <th>State</th>                
+                <th>Edit</th>
+                <th>Delete</th>
             </tr>
         </thead>
         <tbody>
@@ -32,10 +33,12 @@ else
                         <a class="nav-link" href="AddNewOrders/@odr.orderid">
                             <span class="oi oi-pencil" aria-hidden="true">Edit</span>
                         </a>
-                        <a class="nav-link" href="Delete/@odr.orderid">
-                            <span class="oi oi-trash" aria-hidden="true">Delete</span>
-                        </a>
+                       
                     </td>
+                    <td>
+                        <a href="javascript:void(0)" class="btn btn-danger" @onclick="@(() => DeleteOrder(@odr.orderid))">Delete</a>
+
+                     </td>
                 </tr>
             }
         </tbody>
@@ -49,8 +52,16 @@ else
     protected override async Task OnInitializedAsync()
     {
         OrdersObj = await http.GetFromJsonAsync<List<Orders>>("api/Orders/GetOrders");
-     
 
+
+    }
+
+    private async Task DeleteOrder(Int64 OrderId)
+    {
+        
+        var result = await http.DeleteAsync("api/Orders/DeleteOrders/"+OrderId);
+        OrdersObj = await http.GetFromJsonAsync<List<Orders>>("api/Orders/GetOrders");
+    
     }
 
 

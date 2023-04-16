@@ -53,10 +53,6 @@ namespace TaskOne.Server.Controllers
 
           
 
-            
-
-
-
 
             if (orders == null)
             {
@@ -189,22 +185,54 @@ namespace TaskOne.Server.Controllers
 
         }
 
-        // DELETE: api/Orders/5
+        // DELETE: api/Orders/DeleteOrders/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteOrders(int id)
+        public async Task<IActionResult> DeleteOrders(long id)
         {
-            if (_context.Orders == null)
+            try
             {
-                return NotFound();
+                List<windows> lstw = new List<windows>();
+
+                if (_context.Orders == null)
+                {
+                    return NotFound();
+                }
+               // var orders = await _context.Orders.FindAsync(id);
+
+
+                Orders orders = await _context.Orders
+                    .Include(p => p.liwindows)
+                    .ThenInclude(w => w.liSubElement)
+                    .FirstOrDefaultAsync(p => p.orderid == id);
+
+
+                if (orders == null)
+                {
+                    return NotFound();
+                }
+
+
+
+                foreach (windows item in orders.liwindows)
+                {
+                    foreach (SubElement sitem in item.liSubElement)
+                    {
+                        _context.SubElement.Remove(sitem);
+                    }
+
+                    _context.windows.Remove(item);
+                }
+
+                _context.Orders.Remove(orders);
+                await _context.SaveChangesAsync();
             }
-            var orders = await _context.Orders.FindAsync(id);
-            if (orders == null)
+            catch (Exception e)
             {
-                return NotFound();
+
+                return NotFound(e.Message);
             }
 
-            _context.Orders.Remove(orders);
-            await _context.SaveChangesAsync();
+          
 
             return NoContent();
         }
