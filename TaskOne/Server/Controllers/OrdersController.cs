@@ -149,6 +149,23 @@ namespace TaskOne.Server.Controllers
                         if (WindoesExists(item.winId))
                         {
                             _context.Entry(item).State = EntityState.Modified;
+
+                            foreach (SubElement subitem in item.liSubElement)
+                            {
+                                if (SubItemsExists((int)subitem.SubElementID))
+                                {
+
+
+                                    _context.Entry(subitem).State = EntityState.Modified;
+                                }
+                                else {
+
+                                    SubElement subElement = subitem as SubElement;
+                                    _context.SubElement.Add(subElement);
+                                }
+                            }
+                            
+
                         }
                         else {
                             windows winIrem = item as windows;
@@ -200,6 +217,12 @@ namespace TaskOne.Server.Controllers
         private bool WindoesExists(int id)
         {
             return (_context.windows?.Any(e => e.winId == id)).GetValueOrDefault();
+        }
+
+        private bool SubItemsExists(int id)
+        {
+            return (_context.SubElement?.Any(e => e.SubElementID == id)).GetValueOrDefault();
+
         }
     }
 }

@@ -257,35 +257,6 @@
         }
     }
 
-    protected override async void OnInitialized()
-    {
-        try
-        {
-
-
-            // Create EditContexts
-            ///  formEditContext = new EditContext(Objwindows);
-            //formOrdersEditContext =new EditContext(odr);
-
-
-
-            //lstObjSubElement.Add(new SubElement {winId=10,SubElementID=10,Type="test1" ,Width=0,Height=0} );
-            ////lstObjSubElement.Add(new SubElement {winId=10,SubElementID=10,Type="test1" ,Width=0,Height=0} );
-
-            //lstwin.Add(
-            //new windows { liSubElement = lstObjSubElement, winId = 0, WindowName = "", QuantityOfWindows = null, orderid = 0, TotalSubElements = null }
-            //);
-        }
-        catch (Exception c)
-        {
-
-            Console.WriteLine(c.Message);
-        }
-
-
-    }
-
-
 
     private async Task saveData()
     {
@@ -309,12 +280,17 @@
         else        
         {
 
-
+             foreach (SubElement item in lstObjCurrSelecSubElement)
+             {
+                lstObjSubElement.First(d => d.SubElementID == item.SubElementID).Type = item.Type;
+                lstObjSubElement.First(d => d.SubElementID == item.SubElementID).Width = item.Width;
+                lstObjSubElement.First(d => d.SubElementID == item.SubElementID).Height = item.Height;
+            }
             odr.liwindows = lstwin;
 
             var response = await http.PostAsJsonAsync("api/Orders/PostOrdersUpdate", odr);
-
-            btnLbl = "Apply Changes";
+            
+            navManager.NavigateTo("/OrderList");
         }
 
     }
@@ -330,6 +306,8 @@
         foreach (SubElement item in lstObjCurrSelecSubElement)
         {
             lstObjSubElement.First(d => d.SubElementID == item.SubElementID).Type = item.Type;
+            lstObjSubElement.First(d => d.SubElementID == item.SubElementID).Width = item.Width;
+            lstObjSubElement.First(d => d.SubElementID == item.SubElementID).Height = item.Height;
 
         }
 
